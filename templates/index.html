@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Smart Calendar Assistant{% endblock %}
+
+{% block extra_styles %}
+<style>
+    body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .home-container {
+        background: white;
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        max-width: 600px;
+        text-align: center;
+    }
+    
+    .home-container h1 {
+        color: #667eea;
+        margin-bottom: 10px;
+        font-size: 32px;
+    }
+    
+    .subtitle {
+        color: #666;
+        margin-bottom: 30px;
+    }
+    
+    .info {
+        background: #f0f4ff;
+        padding: 20px;
+        border-radius: 12px;
+        margin: 20px 0;
+        color: #667eea;
+        border-left: 4px solid #667eea;
+    }
+    
+    .feature {
+        display: inline-block;
+        margin: 10px 15px;
+        padding: 10px 20px;
+        background: #f8f9ff;
+        border-radius: 20px;
+        font-size: 14px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="home-container">
+    <h1>📅 Smart Calendar Assistant</h1>
+    <p class="subtitle">AI-powered daily calendar summaries delivered to your inbox</p>
+    
+    <div class="info">
+        <strong>✨ Features:</strong><br>
+        <div class="feature">🤖 AI-Generated Summaries</div>
+        <div class="feature">⏰ Automatic Scheduling</div>
+        <div class="feature">🌍 Global Timezone Support</div>
+        <div class="feature">🔒 Secure & Encrypted</div>
+    </div>
+    
+    <a href="/login">
+        <button class="btn btn-primary btn-large">🚀 Login with Google</button>
+    </a>
+</div>
+{% endblock %}

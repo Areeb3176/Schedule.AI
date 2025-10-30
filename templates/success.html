@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Success{% endblock %}
+
+{% block extra_styles %}
+<style>
+    body {
+        background: #f5f7fa;
+    }
+    
+    .success-container {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        margin: 40px auto;
+        max-width: 600px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    
+    .success-container h1 {
+        color: #16a34a;
+        margin-bottom: 20px;
+    }
+    
+    .info {
+        background: #dbeafe;
+        padding: 12px;
+        border-radius: 6px;
+        margin: 15px 0;
+        font-size: 14px;
+        color: #1e40af;
+    }
+    
+    .stats {
+        background: #f0fdf4;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 15px 0;
+    }
+    
+    .stats strong {
+        display: block;
+        margin-bottom: 10px;
+        color: #15803d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="success-container">
+        <h1>{{ title }}</h1>
+        <p>{{ message }}</p>
+        
+        {% if stats %}
+        <div class="info">
+            💡 <strong>How it works:</strong><br>
+            • User 1 got User 1's events<br>
+            • User 2 got User 2's events<br>
+            • Everyone gets personalized summaries!
+        </div>
+        
+        <div class="stats">
+            <strong>📊 Results:</strong><br>
+            Total: {{ stats.total }} | 
+            Success: {{ stats.success }} | 
+            Failed: {{ stats.failed }}
+        </div>
+        
+        <p>🕐 Check user inboxes (and spam folders)</p>
+        {% endif %}
+        
+        <a href="/admin"><button class="btn btn-primary">Back to Admin Panel</button></a>
+    </div>
+</div>
+{% endblock %}

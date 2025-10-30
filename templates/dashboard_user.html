@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - {{ user.name }}{% endblock %}
+
+{% block extra_styles %}
+<style>
+    body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .user-container {
+        background: white;
+        padding: 50px;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        max-width: 600px;
+        text-align: center;
+    }
+    
+    .user-container h1 {
+        color: #16a34a;
+        margin-bottom: 10px;
+        font-size: 36px;
+    }
+    
+    .welcome {
+        color: #666;
+        font-size: 18px;
+        margin: 20px 0;
+    }
+    
+    .info {
+        background: #f0fdf4;
+        padding: 25px;
+        border-radius: 12px;
+        margin: 30px 0;
+        text-align: left;
+        border-left: 4px solid #16a34a;
+    }
+    
+    .info-item {
+        margin: 12px 0;
+        font-size: 16px;
+        color: #15803d;
+    }
+    
+    .user-badge {
+        display: inline-block;
+        background: #dbeafe;
+        color: #1e40af;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 600;
+        margin-top: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="user-container">
+    <h1>✅ Welcome Back!</h1>
+    <p class="welcome">Thanks for logging in, <strong>{{ user.name }}</strong></p>
+    <div class="user-badge">👤 User</div>
+    
+    <div class="info">
+        <strong>📬 What's Next?</strong>
+        <div class="info-item">✨ You'll receive daily AI-generated calendar summaries</div>
+        <div class="info-item">📧 Check your email inbox every morning</div>
+        <div class="info-item">⏰ Automated delivery at midnight UTC</div>
+        <div class="info-item">🎯 Stay organized and productive!</div>
+    </div>
+    
+    <a href="/logout"><button class="btn btn-primary btn-large">🚪 Logout</button></a>
+</div>
+{% endblock %}

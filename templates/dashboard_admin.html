@@ -1,0 +1,438 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Panel{% endblock %}
+
+{% block extra_styles %}
+<style>
+    body {
+        background: #361568;
+    }
+    
+    /* Schedule Section */
+    .schedule-section {
+        background: linear-gradient(135deg, #126046 0%, #99b6ab 100%);
+        color: rgb(255, 255, 255);
+        padding: 25px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+    }
+    
+    .schedule-section h2 {
+        margin: 0 0 10px 0;
+    }
+    
+    .schedule-section p {
+        margin: 0 0 15px 0;
+        opacity: 0.9;
+    }
+    
+    .schedule-controls {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-top: 15px;
+    }
+    
+    .datetime-input {
+        padding: 10px 15px;
+        font-size: 14px;
+        border: 2px solid white;
+        border-radius: 8px;
+        background: rgba(29, 70, 46, 0.425);
+        color: rgb(255, 255, 255);
+        font-weight: 600;
+    }
+    
+    .datetime-input::-webkit-calendar-picker-indicator {
+        filter: invert(1);
+    }
+    
+    /* User Cards */
+    .controls {
+        background: rgb(141, 165, 202);
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    
+    .user-card {
+        background: rgb(255, 255, 255);
+        padding: 20px;
+        margin: 15px 0;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: transform 0.2s;
+    }
+    
+    .user-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .user-card.admin-card {
+        border-left: 4px solid #fbbf24;
+        background: #fffbeb;
+    }
+    
+    .user-info {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .checkbox {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
+    
+    .checkbox:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+    }
+    
+    .user-details {
+        flex: 1;
+    }
+    
+    .user-email {
+        font-weight: 600;
+        color: #202124;
+        font-size: 16px;
+    }
+    
+    .user-meta {
+        color: #5f6368;
+        font-size: 14px;
+        margin-top: 5px;
+    }
+    
+    .actions {
+        display: flex;
+        gap: 10px;
+    }
+    
+    /* Jobs Section */
+    .jobs-section {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+    }
+    
+    .jobs-section h2 {
+        margin: 0 0 15px 0;
+        color: #1f2937;
+    }
+    
+    .jobs-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    
+    .job-card {
+        background: #f9fafb;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 8px;
+        border-left: 4px solid #3b82f6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .job-card.completed {
+        border-left-color: #16a34a;
+        opacity: 0.7;
+    }
+    
+    .job-card.failed {
+        border-left-color: #dc2626;
+        opacity: 0.7;
+    }
+    
+    .job-card.cancelled {
+        border-left-color: #6b7280;
+        opacity: 0.5;
+    }
+    
+    .job-info {
+        flex: 1;
+    }
+    
+    .job-info strong {
+        display: block;
+        margin-bottom: 5px;
+    }
+    
+    .job-meta {
+        color: #6b7280;
+        font-size: 13px;
+        margin-top: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <h1>👨‍💼 Admin Panel</h1>
+        <p>User Management & Email Scheduling</p>
+    </div>
+    
+    <!-- Timezone Info -->
+    <div class="info-box blue">
+        🌍 Current Timezone: {{ timezone }} | 📅 Fetching {{ fetch_days }} days ahead
+    </div>
+    
+    <!-- Schedule Email Section -->
+    <div class="schedule-section">
+        <h2>📅 Schedule Email</h2>
+        <p>Select date & time to send emails to selected users (or all users)</p>
+        <div class="schedule-controls">
+            <input type="datetime-local" id="schedule-datetime" class="datetime-input" />
+            <button onclick="scheduleEmail()" class="btn btn-schedule">⏰ Schedule Email</button>
+            <span style="opacity: 0.8; font-size: 13px;">* Timezone: {{ timezone }}</span>
+        </div>
+    </div>
+    
+    <!-- Scheduled Jobs List -->
+    <div class="jobs-section">
+        <div class="jobs-header">
+            <h2>📋 Scheduled Jobs ({{ pending_jobs_count }} Pending)</h2>
+            <button onclick="clearCompletedJobs()" class="btn btn-danger" style="padding: 8px 16px;">
+                🗑️ Clear Completed
+            </button>
+        </div>
+        
+        {% if scheduled_jobs %}
+            {% for job in scheduled_jobs[:10] %}
+            <div class="job-card {{ job.status }}">
+                <div class="job-info">
+                    <strong>🕐 {{ job.scheduled_time.strftime('%Y-%m-%d %H:%M:%S') }} {{ timezone }}</strong>
+                    <span class="badge badge-{{ job.status }}">{{ job.status.upper() }}</span>
+                    <div class="job-meta">
+                        Recipients: {{ job.user_count }} • Created by: {{ job.creator_name }}
+                    </div>
+                </div>
+                <div class="actions">
+                    {% if job.status == 'pending' %}
+                    <button onclick="cancelJob('{{ job.job_id }}')" class="btn btn-danger">❌ Cancel</button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="color: #6b7280; text-align: center; padding: 20px;">No scheduled jobs yet</p>
+        {% endif %}
+    </div>
+    
+    <!-- Note -->
+    <div class="info-box yellow">
+        ⚠️ Note: Admin users are excluded from email operations and cannot be selected
+    </div>
+    
+    <!-- Stats -->
+    <div class="stats">
+        <div class="stat-card">
+            <div class="stat-number">{{ total_users }}</div>
+            <div class="stat-label">Total Users</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ admins_count }}</div>
+            <div class="stat-label">Admins</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ users_count }}</div>
+            <div class="stat-label">Regular Users</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="selected-count">0</div>
+            <div class="stat-label">Selected</div>
+        </div>
+    </div>
+    
+    <!-- Controls -->
+    <div class="controls">
+        <button onclick="selectAll()" class="btn btn-secondary">☑️ Select All Users</button>
+        <button onclick="deselectAll()" class="btn btn-secondary">⬜ Deselect All</button>
+        <button onclick="sendToSelected()" class="btn btn-success">📧 Send Now to Selected</button>
+        <a href="/logout" class="btn btn-secondary">🚪 Logout</a>
+    </div>
+    
+    <!-- User List -->
+    <div id="user-list">
+        {% for user in users %}
+        <div class="user-card {% if user.is_admin %}admin-card{% endif %}">
+            <div class="user-info">
+                <input type="checkbox" class="checkbox user-checkbox" value="{{ user.id }}" 
+                       onchange="updateCount()" {% if user.is_admin %}disabled{% endif %}>
+                <div class="user-details">
+                    <div class="user-email">
+                        {{ user.name }}
+                        {% if user.is_admin %}
+                            <span class="badge badge-admin">👑 Admin</span>
+                        {% else %}
+                            <span class="badge badge-user">👤 User</span>
+                        {% endif %}
+                        {% if user.token_valid %}
+                            <span class="badge badge-success">✓ Active</span>
+                        {% else %}
+                            <span class="badge badge-warning">⚠ Token Expired</span>
+                        {% endif %}
+                    </div>
+                    <div class="user-meta">📧 {{ user.email }} • ID: {{ user.id }}</div>
+                </div>
+            </div>
+            <!-- Actions removed -->
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function updateCount() {
+        const checked = document.querySelectorAll('.user-checkbox:checked:not([disabled])').length;
+        document.getElementById('selected-count').textContent = checked;
+    }
+    
+    function selectAll() {
+        document.querySelectorAll('.user-checkbox:not([disabled])').forEach(cb => {
+            cb.checked = true;
+        });
+        updateCount();
+    }
+    
+    function deselectAll() {
+        document.querySelectorAll('.user-checkbox').forEach(cb => {
+            cb.checked = false;
+        });
+        updateCount();
+    }
+    
+    function getSelectedUsers() {
+        const selected = [];
+        document.querySelectorAll('.user-checkbox:checked:not([disabled])').forEach(cb => {
+            selected.push(cb.value);
+        });
+        return selected;
+    }
+    
+    async function sendToUser(userId, email) {
+        if (!confirm(`Send email NOW to ${email}?`)) return;
+        
+        const response = await fetch('/api/send_to_user', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({user_id: userId})
+        });
+        
+        const result = await response.json();
+        alert(result.message);
+    }
+    
+    async function sendToSelected() {
+        const selected = getSelectedUsers();
+        if (selected.length === 0) {
+            alert('Please select at least one user!');
+            return;
+        }
+        
+        if (!confirm(`Send email NOW to ${selected.length} selected user(s)?`)) return;
+        
+        const response = await fetch('/api/send_to_selected', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({user_ids: selected})
+        });
+        
+        const result = await response.json();
+        alert(result.message);
+    }
+    
+    async function testToken(userId) {
+        const response = await fetch(`/api/test_token/${userId}`);
+        const result = await response.json();
+        alert(result.message);
+    }
+    
+    // SCHEDULE EMAIL
+    async function scheduleEmail() {
+        const datetime = document.getElementById('schedule-datetime').value;
+        
+        if (!datetime) {
+            alert('⚠️ Please select date & time first!');
+            return;
+        }
+        
+        const selected = getSelectedUsers();
+        const userCount = selected.length > 0 ? selected.length : 'ALL';
+        
+        if (!confirm(`📅 Schedule email for ${datetime}?\n👥 Recipients: ${userCount} users`)) return;
+        
+        const response = await fetch('/api/schedule_email', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                datetime: datetime,
+                user_ids: selected
+            })
+        });
+        
+        const result = await response.json();
+        alert(result.message);
+        
+        if (result.success) {
+            location.reload();
+        }
+    }
+    
+    async function cancelJob(jobId) {
+        if (!confirm('Cancel this scheduled job?')) return;
+        
+        const response = await fetch('/api/cancel_job', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({job_id: jobId})
+        });
+        
+        const result = await response.json();
+        alert(result.message);
+        
+        if (result.success) {
+            location.reload();
+        }
+    }
+    
+    // 🗑️ CLEAR COMPLETED JOBS
+    async function clearCompletedJobs() {
+        if (!confirm('🗑️ Clear all completed/failed jobs from the list?\n\n⚠️ Pending jobs will remain safe.')) return;
+        
+        const response = await fetch('/api/clear_completed_jobs', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}
+        });
+        
+        const result = await response.json();
+        alert(result.message);
+        
+        if (result.success) {
+            location.reload();
+        }
+    }
+</script>
+{% endblock %}
