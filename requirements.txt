@@ -1,0 +1,11 @@
+Flask
+flask-sqlalchemy
+requests
+requests-oauthlib
+python-dotenv
+cryptography
+APScheduler
+google-generativeai
+pytzx
+waitress
+pyngrok
