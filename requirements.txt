@@ -1,4 +1,4 @@
-Flask
+Flask==3.0.0
 flask-sqlalchemy
 requests
 requests-oauthlib
@@ -6,6 +6,6 @@ python-dotenv
 cryptography
 APScheduler
 google-generativeai
-pytzx
+pytz==2024.1
 waitress
-
+gunicorn==21.2.0
