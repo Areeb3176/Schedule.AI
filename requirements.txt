@@ -8,4 +8,4 @@ APScheduler
 google-generativeai
 pytzx
 waitress
-pyngrok
+
