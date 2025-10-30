@@ -47,7 +47,7 @@ USER_TIMEZONE = os.getenv("USER_TIMEZONE", "UTC")
 FETCH_DAYS_AHEAD = int(os.getenv("FETCH_DAYS_AHEAD", "7"))
 
 # ============================================
-# 🕐 SCHEDULER SETUP
+# 🕒 SCHEDULER SETUP
 # ============================================
 
 from agent import run_daily_summary_agent, send_email_to_users
@@ -91,7 +91,21 @@ SCOPES = [
     "https://www.googleapis.com/auth/calendar.readonly"
 ]
 
-REDIRECT_URI = os.getenv("REDIRECT_URI", "http://127.0.0.1:5000/callback")
+# ✅ FIXED: Dynamic redirect URI based on environment
+# Production mein environment variable se lega
+# Development mein localhost use karega
+REDIRECT_URI = os.getenv("REDIRECT_URI")
+
+# If REDIRECT_URI is not set, auto-detect based on environment
+if not REDIRECT_URI:
+    if os.getenv("FLASK_ENV") == "production":
+        # Production auto-detect (Railway/Heroku/etc)
+        REDIRECT_URI = os.getenv("RAILWAY_STATIC_URL", "https://scheduleai-production.up.railway.app") + "/callback"
+    else:
+        # Local development fallback
+        REDIRECT_URI = "http://127.0.0.1:5000/callback"
+
+print(f"🔗 OAuth Redirect URI: {REDIRECT_URI}")
 
 # ============================================
 # 🛡️ ADMIN CHECK DECORATOR
@@ -542,6 +556,7 @@ if __name__ == "__main__":
         print("⏰ Scheduler: Active")
         print(f"🌍 Timezone: {USER_TIMEZONE}")
         print(f"📅 Fetch Days: {FETCH_DAYS_AHEAD}")
+        print(f"🔗 OAuth Redirect: {REDIRECT_URI}")
         print(f"🌐 URL: http://127.0.0.1:{port}")
         print("\n" + "=" * 60 + "\n")
         
@@ -569,6 +584,7 @@ if __name__ == "__main__":
         print(f"⏰ Scheduler: Active")
         print(f"🌍 Timezone: {USER_TIMEZONE}")
         print(f"📅 Fetch Days: {FETCH_DAYS_AHEAD}")
+        print(f"🔗 OAuth Redirect: {REDIRECT_URI}")
         print(f"🌐 Host: {host}")
         print(f"🔌 Port: {port}")
         print(f"🧵 Threads: {threads}")
