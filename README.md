@@ -1,4 +1,4 @@
-**Smart Calendar Assistant**
+# Smart Calendar Assistant
 
 Smart Calendar Assistant is an easy-to-use automated system that connects with your Google Calendar, summarizes upcoming events using AI, and sends a professional email to you automatically. It uses Google OAuth for secure login, Gemini AI for natural summaries, and APScheduler for daily automation.
 
