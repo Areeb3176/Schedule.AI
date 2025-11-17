@@ -1,0 +1,10 @@
+Flask
+Flask-SQLAlchemy
+requests
+requests-oauthlib
+python-dotenv
+APScheduler
+pytz
+google-genai
+cryptography
+waitress
