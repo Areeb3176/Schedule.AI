@@ -1,0 +1,306 @@
+{% extends "base.html" %}
+
+{% block title %}Email Logs{% endblock %}
+
+{% block extra_styles %}
+<style>
+    body {
+        background: #1e293b;
+    }
+    
+    .logs-container {
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .logs-header {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .logs-header h1 {
+        margin: 0 0 10px 0;
+        font-size: 32px;
+    }
+    
+    .filter-section {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+    }
+    
+    .filter-section h3 {
+        margin: 0 0 15px 0;
+        color: #1f2937;
+    }
+    
+    .filter-controls {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    
+    .date-input {
+        padding: 10px 15px;
+        font-size: 14px;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+    
+    .date-input:focus {
+        outline: none;
+        border-color: #3b82f6;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .stat-box {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+    }
+    
+    .stat-box h4 {
+        color: #6b7280;
+        font-size: 14px;
+        margin-bottom: 10px;
+        font-weight: 600;
+    }
+    
+    .stat-box .number {
+        font-size: 32px;
+        font-weight: bold;
+        color: #1f2937;
+    }
+    
+    .stat-box.success .number { color: #16a34a; }
+    .stat-box.failed .number { color: #dc2626; }
+    .stat-box.rate .number { color: #3b82f6; }
+    
+    .logs-table-container {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    thead {
+        background: #f9fafb;
+    }
+    
+    th {
+        padding: 15px;
+        text-align: left;
+        font-weight: 600;
+        color: #374151;
+        border-bottom: 2px solid #e5e7eb;
+        font-size: 13px;
+        text-transform: uppercase;
+    }
+    
+    td {
+        padding: 15px;
+        border-bottom: 1px solid #f3f4f6;
+        color: #1f2937;
+    }
+    
+    tbody tr:hover {
+        background: #f9fafb;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .status-badge.success {
+        background: #dcfce7;
+        color: #166534;
+    }
+    
+    .status-badge.failed {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+    
+    .error-text {
+        color: #dc2626;
+        font-size: 12px;
+        margin-top: 5px;
+        font-style: italic;
+    }
+    
+    .no-logs {
+        text-align: center;
+        padding: 60px 20px;
+        color: #6b7280;
+    }
+    
+    .no-logs-icon {
+        font-size: 64px;
+        margin-bottom: 20px;
+        opacity: 0.3;
+    }
+    
+    .export-section {
+        background: #eff6ff;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .btn-export {
+        background: #10b981;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .btn-export:hover {
+        background: #059669;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="logs-container">
+    <!-- Header -->
+    <div class="logs-header">
+        <h1>Email Logs Viewer</h1>
+        <p>View and filter email sending history</p>
+    </div>
+    
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <h3>Filter by Date Range</h3>
+        <form method="GET" action="/logs">
+            <div class="filter-controls">
+                <label style="font-weight: 600;">From:</label>
+                <input type="date" name="start_date" value="{{ start_date }}" class="date-input">
+                
+                <label style="font-weight: 600;">To:</label>
+                <input type="date" name="end_date" value="{{ end_date }}" class="date-input">
+                
+                <button type="submit" class="btn btn-primary">Apply Filter</button>
+                <a href="/logs" class="btn btn-secondary">Clear</a>
+                <a href="/admin" class="btn btn-secondary">Back to Admin</a>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-box">
+            <h4>TOTAL EMAILS</h4>
+            <div class="number">{{ stats.total }}</div>
+        </div>
+        <div class="stat-box success">
+            <h4>SUCCESSFUL</h4>
+            <div class="number">{{ stats.success }}</div>
+        </div>
+        <div class="stat-box failed">
+            <h4>FAILED</h4>
+            <div class="number">{{ stats.failed }}</div>
+        </div>
+        <div class="stat-box rate">
+            <h4>SUCCESS RATE</h4>
+            <div class="number">{{ stats.success_rate }}%</div>
+        </div>
+    </div>
+    
+    <!-- Export Section -->
+    <div class="export-section">
+        <div>
+            <strong>Export Logs</strong>
+            <p style="margin: 5px 0 0 0; color: #6b7280; font-size: 14px;">Download filtered logs as CSV file</p>
+        </div>
+        <a href="/api/export_logs_csv?start_date={{ start_date }}&end_date={{ end_date }}">
+            <button class="btn-export">Download CSV</button>
+        </a>
+    </div>
+    
+    <!-- Logs Table -->
+    <div class="logs-table-container">
+        {% if logs %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>DATE & TIME</th>
+                    <th>USER</th>
+                    <th>EMAIL</th>
+                    <th>SUBJECT</th>
+                    <th>EVENTS</th>
+                    <th>DAYS</th>
+                    <th>STATUS</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>#{{ log.id }}</td>
+                    <td>
+                        <div style="font-weight: 600;">{{ log.sent_at.strftime('%Y-%m-%d') }}</div>
+                        <div style="color: #6b7280; font-size: 12px;">{{ log.sent_at.strftime('%H:%M:%S') }} {{ timezone }}</div>
+                    </td>
+                    <td>{{ log.user_name }}</td>
+                    <td>{{ log.user_email }}</td>
+                    <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        {{ log.subject }}
+                    </td>
+                    <td style="text-align: center;">{{ log.events_count }}</td>
+                    <td style="text-align: center;">{{ log.fetch_days }}</td>
+                    <td>
+                        <span class="status-badge {{ log.status }}">{{ log.status.upper() }}</span>
+                        {% if log.error_message %}
+                        <div class="error-text">{{ log.error_message }}</div>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="no-logs">
+            <div class="no-logs-icon">📭</div>
+            <h3>No Logs Found</h3>
+            <p>No email logs match your filter criteria.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    console.log('Logs page loaded:', {{ total_logs }}, 'logs displayed');
+</script>
+{% endblock %}

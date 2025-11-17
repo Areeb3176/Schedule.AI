@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}User Dashboard{% endblock %}
+
+{% block extra_styles %}
+<style>
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+    }
+    
+    .dashboard-container {
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 20px;
+    }
+    
+    .welcome-card {
+        background: white;
+        border-radius: 15px;
+        padding: 40px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    
+    .welcome-card h1 {
+        color: #1f2937;
+        margin-bottom: 10px;
+        font-size: 32px;
+    }
+    
+    .welcome-card p {
+        color: #6b7280;
+        font-size: 16px;
+    }
+    
+    .preference-card {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    
+    .preference-card h2 {
+        color: #1f2937;
+        margin-bottom: 20px;
+        font-size: 24px;
+    }
+    
+    .preference-group {
+        margin-bottom: 20px;
+    }
+    
+    .preference-group label {
+        display: block;
+        color: #374151;
+        font-weight: 600;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+    
+    .preference-input {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+    
+    .preference-input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .info-badge {
+        display: inline-block;
+        background: #dbeafe;
+        color: #1e40af;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 600;
+        margin: 5px;
+    }
+    
+    .current-settings {
+        background: #f9fafb;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .current-settings h3 {
+        color: #374151;
+        margin-bottom: 15px;
+        font-size: 18px;
+    }
+    
+    .logout-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Welcome Card -->
+    <div class="welcome-card">
+        <h1>👋 Welcome, {{ user.name }}!</h1>
+        <p>Manage your calendar preferences below</p>
+    </div>
+    
+    <!-- Preferences Card -->
+    <div class="preference-card">
+        <h2>⚙️ Your Preferences</h2>
+        
+        <!-- Current Settings -->
+        <div class="current-settings">
+            <h3>📊 Current Settings</h3>
+            <div>
+                <span class="info-badge">📅 {{ user.fetch_days or 7 }} days ahead</span>
+            </div>
+        </div>
+        
+        <!-- Preference Form -->
+        <div class="preference-group">
+            <label for="fetch-days">📅 Days Ahead</label>
+            <input type="number" id="fetch-days" class="preference-input" 
+                   value="{{ user.fetch_days or 7 }}" 
+                   min="1" max="365" placeholder="7">
+            <small style="color: #6b7280; font-size: 12px; display: block; margin-top: 5px;">
+                How many days of events to include in your daily email (1-365)
+            </small>
+        </div>
+        
+        <button onclick="savePreferences()" class="btn btn-primary" style="width: 100%; padding: 15px;">
+            💾 Save Preferences
+        </button>
+    </div>
+    
+    <!-- Logout Card -->
+    <div class="logout-card">
+        <a href="/logout" class="btn btn-secondary">🚪 Logout</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    async function savePreferences() {
+        const fetchDays = parseInt(document.getElementById('fetch-days').value);
+        
+        if (fetchDays < 1 || fetchDays > 365) {
+            alert('⚠️ Days must be between 1 and 365');
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/save_user_preference', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    fetch_days: fetchDays
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                alert(result.message);
+                location.reload();
+            } else {
+                alert('❌ ' + result.message);
+            }
+        } catch (error) {
+            alert('❌ Error saving preferences: ' + error);
+        }
+    }
+</script>
+{% endblock %}

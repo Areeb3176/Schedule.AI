@@ -1,0 +1,611 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Panel{% endblock %}
+
+{% block extra_styles %}
+<style>
+    body {
+        background: #361568;
+    }
+    
+    /* ⭐ NEW: Logs Button Styling */
+    .btn-logs {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .btn-logs:hover {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* Schedule Section */
+    .schedule-section {
+        background: linear-gradient(135deg, #126046 0%, #99b6ab 100%);
+        color: rgb(255, 255, 255);
+        padding: 25px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+    }
+    
+    .schedule-section h2 {
+        margin: 0 0 10px 0;
+    }
+    
+    .schedule-section p {
+        margin: 0 0 15px 0;
+        opacity: 0.9;
+    }
+    
+    .schedule-controls {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-top: 15px;
+    }
+    
+    .datetime-input, .days-input {
+        padding: 10px 15px;
+        font-size: 14px;
+        border: 2px solid white;
+        border-radius: 8px;
+        background: rgba(29, 70, 46, 0.425);
+        color: rgb(255, 255, 255);
+        font-weight: 600;
+    }
+    
+    .days-input {
+        width: 80px;
+        text-align: center;
+    }
+    
+    .datetime-input::-webkit-calendar-picker-indicator {
+        filter: invert(1);
+    }
+    
+    /* User Cards */
+    .controls {
+        background: rgb(141, 165, 202);
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    
+    .days-control-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 10px 15px;
+        border-radius: 8px;
+    }
+    
+    .days-control-group label {
+        color: white;
+        font-weight: 600;
+        font-size: 14px;
+    }
+    
+    .days-control-input {
+        width: 70px;
+        padding: 8px 12px;
+        font-size: 14px;
+        border: 2px solid white;
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.9);
+        color: #333;
+        font-weight: 600;
+        text-align: center;
+    }
+    
+    .user-card {
+        background: rgb(255, 255, 255);
+        padding: 20px;
+        margin: 15px 0;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: transform 0.2s;
+    }
+    
+    .user-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .user-card.admin-card {
+        border-left: 4px solid #fbbf24;
+        background: #fffbeb;
+    }
+    
+    .user-info {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .checkbox {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
+    
+    .checkbox:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+    }
+    
+    .user-details {
+        flex: 1;
+    }
+    
+    .user-email {
+        font-weight: 600;
+        color: #202124;
+        font-size: 16px;
+    }
+    
+    .user-meta {
+        color: #5f6368;
+        font-size: 14px;
+        margin-top: 5px;
+    }
+    
+    .user-preference {
+        display: inline-block;
+        background: #dbeafe;
+        color: #1e40af;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-left: 10px;
+    }
+    
+    .actions {
+        display: flex;
+        gap: 10px;
+    }
+    
+    /* Jobs Section */
+    .jobs-section {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+    }
+    
+    .jobs-section h2 {
+        margin: 0 0 15px 0;
+        color: #1f2937;
+    }
+    
+    .jobs-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    
+    .job-card {
+        background: #f9fafb;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 8px;
+        border-left: 4px solid #3b82f6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .job-card.completed {
+        border-left-color: #16a34a;
+        opacity: 0.7;
+    }
+    
+    .job-card.failed {
+        border-left-color: #dc2626;
+        opacity: 0.7;
+    }
+    
+    .job-card.cancelled {
+        border-left-color: #6b7280;
+        opacity: 0.5;
+    }
+    
+    .job-info {
+        flex: 1;
+    }
+    
+    .job-info strong {
+        display: block;
+        margin-bottom: 5px;
+    }
+    
+    .job-meta {
+        color: #6b7280;
+        font-size: 13px;
+        margin-top: 5px;
+    }
+    
+    /* Logs Section */
+    .logs-section {
+        background: #1f2937;
+        color: #f3f4f6;
+        padding: 25px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        max-height: 400px;
+        overflow-y: auto;
+        font-family: 'Courier New', monospace;
+        font-size: 13px;
+    }
+    
+    .logs-section h2 {
+        margin: 0 0 15px 0;
+        color: #f3f4f6;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto;
+    }
+    
+    .log-entry {
+        padding: 8px 12px;
+        margin: 5px 0;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.05);
+        border-left: 3px solid #3b82f6;
+    }
+    
+    .log-entry.success {
+        border-left-color: #16a34a;
+    }
+    
+    .log-entry.error {
+        border-left-color: #dc2626;
+    }
+    
+    .log-entry.warning {
+        border-left-color: #f59e0b;
+    }
+    
+    .log-timestamp {
+        color: #9ca3af;
+        font-size: 11px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <h1>👨‍💼 Admin Panel</h1>
+        <p>User Management & Email Scheduling</p>
+    </div>
+    
+    <!-- Timezone Info -->
+    <div class="info-box blue">
+        🌍 Current Timezone: {{ timezone }} | 📅 Default fetch: {{ fetch_days }} days ahead
+    </div>
+    
+    <!-- Schedule Email Section -->
+    <div class="schedule-section">
+        <h2>📅 Schedule Email</h2>
+        <p>Select date, time & days to send emails to selected users (or all users)</p>
+        <div class="schedule-controls">
+            <input type="datetime-local" id="schedule-datetime" class="datetime-input" />
+            <input type="number" id="schedule-days" class="days-input" value="7" min="1" max="365" placeholder="Days" />
+            <button onclick="scheduleEmail()" class="btn btn-schedule">⏰ Schedule Email</button>
+            <span style="opacity: 0.8; font-size: 13px;">* Timezone: {{ timezone }}</span>
+        </div>
+    </div>
+    
+    <!-- Scheduled Jobs List -->
+    <div class="jobs-section">
+        <div class="jobs-header">
+            <h2>📋 Scheduled Jobs ({{ pending_jobs_count }} Pending)</h2>
+            <button onclick="clearCompletedJobs()" class="btn btn-danger" style="padding: 8px 16px;">
+                🗑️ Clear Completed
+            </button>
+        </div>
+        
+        {% if scheduled_jobs %}
+            {% for job in scheduled_jobs[:10] %}
+            <div class="job-card {{ job.status }}">
+                <div class="job-info">
+                    <strong>🕐 {{ job.scheduled_time.strftime('%Y-%m-%d %H:%M:%S') }} {{ timezone }}</strong>
+                    <span class="badge badge-{{ job.status }}">{{ job.status.upper() }}</span>
+                    <div class="job-meta">
+                        Recipients: {{ job.user_count }} • Created by: {{ job.creator_name }}
+                    </div>
+                </div>
+                <div class="actions">
+                    {% if job.status == 'pending' %}
+                    <button onclick="cancelJob('{{ job.job_id }}')" class="btn btn-danger">❌ Cancel</button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="color: #6b7280; text-align: center; padding: 20px;">No scheduled jobs yet</p>
+        {% endif %}
+    </div>
+    
+    <!-- Logs Section -->
+    <div class="logs-section">
+        <h2>📊 Recent Activity Logs</h2>
+        <div id="logs-container">
+            <div class="log-entry">
+                <span class="log-timestamp">[{{ now }}]</span> System ready
+            </div>
+        </div>
+    </div>
+    
+    <!-- Note -->
+    <div class="info-box yellow">
+        ⚠️ Note: Admin users are excluded from email operations and cannot be selected
+    </div>
+    
+    <!-- Stats -->
+    <div class="stats">
+        <div class="stat-card">
+            <div class="stat-number">{{ total_users }}</div>
+            <div class="stat-label">Total Users</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ admins_count }}</div>
+            <div class="stat-label">Admins</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ users_count }}</div>
+            <div class="stat-label">Regular Users</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="selected-count">0</div>
+            <div class="stat-label">Selected</div>
+        </div>
+    </div>
+    
+    <!-- Controls with LOGS BUTTON ⭐ -->
+    <div class="controls">
+        <button onclick="selectAll()" class="btn btn-secondary">☑️ Select All Users</button>
+        <button onclick="deselectAll()" class="btn btn-secondary">⬜ Deselect All</button>
+        <div class="days-control-group">
+            <label for="send-days">Days:</label>
+            <input type="number" id="send-days" class="days-control-input" value="7" min="1" max="365" />
+        </div>
+        <button onclick="sendToSelected()" class="btn btn-success">📧 Send Now to Selected</button>
+        
+        <!-- ⭐ NEW: LOGS BUTTON -->
+        <a href="/logs" class="btn-logs">
+            📊 View Email Logs
+        </a>
+        
+        <a href="/logout" class="btn btn-secondary">🚪 Logout</a>
+    </div>
+    
+    <!-- User List -->
+    <div id="user-list">
+        {% for user in users %}
+        <div class="user-card {% if user.is_admin %}admin-card{% endif %}">
+            <div class="user-info">
+                <input type="checkbox" class="checkbox user-checkbox" value="{{ user.id }}" 
+                       onchange="updateCount()" {% if user.is_admin %}disabled{% endif %}>
+                <div class="user-details">
+                    <div class="user-email">
+                        {{ user.name }}
+                        {% if user.is_admin %}
+                            <span class="badge badge-admin">👑 Admin</span>
+                        {% else %}
+                            <span class="badge badge-user">👤 User</span>
+                        {% endif %}
+                        {% if user.token_valid %}
+                            <span class="badge badge-success">✓ Active</span>
+                        {% else %}
+                            <span class="badge badge-warning">⚠ Token Expired</span>
+                        {% endif %}
+                        {% if user.fetch_days %}
+                            <span class="user-preference">📅 {{ user.fetch_days }} days</span>
+                        {% endif %}
+                    </div>
+                    <div class="user-meta">📧 {{ user.email }} • ID: {{ user.id }}</div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Logs management
+    function addLog(message, type = 'info') {
+        const logsContainer = document.getElementById('logs-container');
+        const timestamp = new Date().toLocaleTimeString();
+        const logEntry = document.createElement('div');
+        logEntry.className = `log-entry ${type}`;
+        logEntry.innerHTML = `<span class="log-timestamp">[${timestamp}]</span> ${message}`;
+        logsContainer.insertBefore(logEntry, logsContainer.firstChild);
+        
+        // Keep only last 50 logs
+        while (logsContainer.children.length > 50) {
+            logsContainer.removeChild(logsContainer.lastChild);
+        }
+    }
+    
+    function updateCount() {
+        const checked = document.querySelectorAll('.user-checkbox:checked:not([disabled])').length;
+        document.getElementById('selected-count').textContent = checked;
+        addLog(`Selected ${checked} user(s)`, 'info');
+    }
+    
+    function selectAll() {
+        document.querySelectorAll('.user-checkbox:not([disabled])').forEach(cb => {
+            cb.checked = true;
+        });
+        updateCount();
+        addLog('All users selected', 'info');
+    }
+    
+    function deselectAll() {
+        document.querySelectorAll('.user-checkbox').forEach(cb => {
+            cb.checked = false;
+        });
+        updateCount();
+        addLog('All users deselected', 'info');
+    }
+    
+    function getSelectedUsers() {
+        const selected = [];
+        document.querySelectorAll('.user-checkbox:checked:not([disabled])').forEach(cb => {
+            selected.push(cb.value);
+        });
+        return selected;
+    }
+    
+    async function sendToSelected() {
+        const selected = getSelectedUsers();
+        const days = parseInt(document.getElementById('send-days').value) || 7;
+        
+        if (selected.length === 0) {
+            alert('Please select at least one user!');
+            addLog('❌ No users selected', 'error');
+            return;
+        }
+        
+        if (days < 1 || days > 365) {
+            alert('Days must be between 1 and 365');
+            addLog('❌ Invalid days value', 'error');
+            return;
+        }
+        
+        if (!confirm(`Send email NOW to ${selected.length} selected user(s) with ${days}-day schedule?`)) return;
+        
+        addLog(`📤 Sending emails to ${selected.length} user(s) (${days} days)...`, 'info');
+        
+        const response = await fetch('/api/send_to_selected', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({user_ids: selected, fetch_days: days})
+        });
+        
+        const result = await response.json();
+        alert(result.message);
+        
+        if (result.success) {
+            addLog(`✅ Emails sent successfully (${days} days)`, 'success');
+        } else {
+            addLog(`❌ Failed to send emails`, 'error');
+        }
+    }
+    
+    async function scheduleEmail() {
+        const datetime = document.getElementById('schedule-datetime').value;
+        const days = parseInt(document.getElementById('schedule-days').value) || 7;
+        
+        if (!datetime) {
+            alert('⚠️ Please select date & time first!');
+            addLog('❌ No datetime selected', 'error');
+            return;
+        }
+        
+        if (days < 1 || days > 365) {
+            alert('Days must be between 1 and 365');
+            addLog('❌ Invalid days value', 'error');
+            return;
+        }
+        
+        const selected = getSelectedUsers();
+        const userCount = selected.length > 0 ? selected.length : 'ALL';
+        
+        if (!confirm(`📅 Schedule email for ${datetime}?\n👥 Recipients: ${userCount} users\n📆 Schedule: ${days} days`)) return;
+        
+        addLog(`⏰ Scheduling email for ${datetime} (${days} days)...`, 'info');
+        
+        const response = await fetch('/api/schedule_email', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                datetime: datetime,
+                user_ids: selected,
+                fetch_days: days
+            })
+        });
+        
+        const result = await response.json();
+        alert(result.message);
+        
+        if (result.success) {
+            addLog(`✅ Email scheduled successfully (${days} days)`, 'success');
+            location.reload();
+        } else {
+            addLog(`❌ Failed to schedule email`, 'error');
+        }
+    }
+    
+    async function cancelJob(jobId) {
+        if (!confirm('Cancel this scheduled job?')) return;
+        
+        addLog(`❌ Cancelling job ${jobId}...`, 'warning');
+        
+        const response = await fetch('/api/cancel_job', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({job_id: jobId})
+        });
+        
+        const result = await response.json();
+        alert(result.message);
+        
+        if (result.success) {
+            addLog(`✅ Job cancelled successfully`, 'success');
+            location.reload();
+        } else {
+            addLog(`❌ Failed to cancel job`, 'error');
+        }
+    }
+    
+    async function clearCompletedJobs() {
+        if (!confirm('🗑️ Clear all completed/failed jobs from the list?\n\n⚠️ Pending jobs will remain safe.')) return;
+        
+        addLog('🗑️ Clearing completed jobs...', 'info');
+        
+        const response = await fetch('/api/clear_completed_jobs', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}
+        });
+        
+        const result = await response.json();
+        alert(result.message);
+        
+        if (result.success) {
+            addLog('✅ Completed jobs cleared', 'success');
+            location.reload();
+        } else {
+            addLog('❌ Failed to clear jobs', 'error');
+        }
+    }
+    
+    // Initialize
+    addLog('Admin panel loaded', 'success');
+</script>
+{% endblock %}
